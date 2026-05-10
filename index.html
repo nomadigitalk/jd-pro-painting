@@ -10,7 +10,6 @@
     <meta property="og:image" content="images/logo-navy.png">
     <meta property="og:type" content="website">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
         * {
@@ -1144,13 +1143,10 @@
     </footer>
 
     <script>
-        /* EmailJS */
-        emailjs.init('1xdmPjpybu_YclXGj');
-
-        const contactForm  = document.getElementById('contact-form');
-        const submitBtn    = document.getElementById('submit-btn');
-        const successBox   = document.getElementById('form-success');
-        const errorBox     = document.getElementById('form-error');
+        const contactForm = document.getElementById('contact-form');
+        const submitBtn   = document.getElementById('submit-btn');
+        const successBox  = document.getElementById('form-success');
+        const errorBox    = document.getElementById('form-error');
 
         contactForm.addEventListener('submit', async function (e) {
             e.preventDefault();
@@ -1167,23 +1163,29 @@
             successBox.style.display = 'none';
             errorBox.style.display   = 'none';
 
-            const params = {
-                from_name:    document.getElementById('name').value.trim(),
-                from_email:   document.getElementById('email').value.trim(),
-                phone:        document.getElementById('phone').value.trim(),
-                project_type: document.getElementById('project-type').value,
-                message:      document.getElementById('message').value.trim(),
-            };
-
             try {
-                await emailjs.send('service_jj4c1te', 'template_lgvi9ud', params);
-                await emailjs.send('service_jj4c1te', 'template_7newwgy', params);
+                const response = await fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({
+                        access_key:   '44451260-22b5-446f-aa12-a0c1ff2025ce',
+                        subject:      'New Estimate Request — JD Pro Painting & Services',
+                        name:         document.getElementById('name').value.trim(),
+                        email:        document.getElementById('email').value.trim(),
+                        phone:        document.getElementById('phone').value.trim(),
+                        project_type: document.getElementById('project-type').value,
+                        message:      document.getElementById('message').value.trim(),
+                    })
+                });
+
+                const result = await response.json();
+                if (!response.ok || !result.success) throw new Error(result.message || 'Error');
 
                 successBox.style.display = 'block';
                 contactForm.reset();
                 if (typeof turnstile !== 'undefined') turnstile.reset();
             } catch (err) {
-                console.error('EmailJS error:', err);
+                console.error('Form error:', err);
                 errorBox.style.display = 'block';
             } finally {
                 submitBtn.disabled    = false;
